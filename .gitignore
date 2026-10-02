@@ -1,0 +1,16 @@
+# .NET build output
+[Bb]in/
+[Oo]bj/
+[Aa]rtifacts/
+TestResults/
+
+# IDE state
+.vs/
+*.user
+*.suo
+
+# Runtime plugin files and SQLite catalog data
+/OpenHarbor/managed-plugins/
+*.db
+*.db-shm
+*.db-wal

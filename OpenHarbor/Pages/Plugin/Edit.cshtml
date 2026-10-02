@@ -1,0 +1,41 @@
+@page "/Plugin/Edit"
+@model OpenHarbor.Pages.Plugin.EditModel
+@{
+    ViewData["Title"] = Model.IsNew ? "Create plugin" : "Edit plugin";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<form method="post">
+    <div asp-validation-summary="All" class="text-danger"></div>
+
+    <input asp-for="Input.Id" type="hidden" />
+
+    <div class="mb-3">
+        <label asp-for="Input.Name" class="form-label">Name</label>
+        <input asp-for="Input.Name" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Input.RouteSubpath" class="form-label">Route subpath</label>
+        <input asp-for="Input.RouteSubpath" class="form-control" placeholder="example-plugin" />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Input.DllRelativePath" class="form-label">DLL relative path</label>
+        <input asp-for="Input.DllRelativePath" class="form-control" placeholder="plugins/example/ExamplePlugin.dll" />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Input.PublicFolderRelativePath" class="form-label">Public folder relative path (optional)</label>
+        <input asp-for="Input.PublicFolderRelativePath" class="form-control" placeholder="plugins/example/public" />
+    </div>
+
+    <div class="mb-3 form-check">
+        <input asp-for="Input.Enabled" class="form-check-input" />
+        <label asp-for="Input.Enabled" class="form-check-label">Enabled</label>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Save</button>
+    <a asp-page="/Index" class="btn btn-secondary">Back</a>
+</form>

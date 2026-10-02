@@ -1,0 +1,46 @@
+@page
+@model OpenHarbor.Pages.IndexModel
+@{
+    ViewData["Title"] = "Plugin catalog";
+}
+
+<h1>Plugin catalog</h1>
+
+@if (Model.RestartPending)
+{
+    <div class="alert alert-warning">Changes are pending restart. The active process will not reload plugins until it is restarted.</div>
+}
+
+<a class="btn btn-primary" asp-page="/Plugin/Edit">Create plugin</a>
+<a class="btn btn-secondary" asp-page="/Account/Login">Switch account</a>
+
+<table class="table table-striped mt-3">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Route</th>
+            <th>DLL</th>
+            <th>Public folder</th>
+            <th>Enabled</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var record in Model.Plugins)
+        {
+            <tr>
+                <td>@record.Name</td>
+                <td>/plugins/@record.RouteSubpath</td>
+                <td>@record.DllRelativePath</td>
+                <td>@(record.PublicFolderRelativePath ?? "—")</td>
+                <td>@(record.Enabled ? "Yes" : "No")</td>
+                <td>
+                    <a class="btn btn-sm btn-outline-secondary" asp-page="/Plugin/Edit" asp-route-id="@record.Id">Edit</a>
+                    <form method="post" asp-page-handler="Delete" asp-route-id="@record.Id" style="display:inline;">
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

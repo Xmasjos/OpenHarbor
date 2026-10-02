@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="OpenHarbor.PluginContracts/OpenHarbor.PluginContracts.csproj" />
+  <Project Path="OpenHarbor/OpenHarbor.csproj" />
+</Solution>
