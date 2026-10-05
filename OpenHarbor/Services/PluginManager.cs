@@ -35,7 +35,8 @@ public class PluginManager
                 continue;
             }
 
-            var loadContext = new PluginAssemblyLoadContext(rootDirectory);
+            var pluginDirectory = Path.GetDirectoryName(dllPath) ?? rootDirectory;
+            var loadContext = new PluginAssemblyLoadContext(pluginDirectory);
             try
             {
                 var assembly = loadContext.LoadFromAssemblyPath(dllPath);
@@ -106,6 +107,12 @@ public class BrokenPlugin(string name, string diagnostic) : IPluginEntry
 {
     public string Name => name;
 
+    public string Version => "unknown";
+
+    public PluginApplicationDescriptor? Application => null;
+
+    public PluginDashboardCapability? Dashboard => null;
+
     public void ConfigureServices(IServiceCollection services, IConfiguration configuration)
     {
     }
@@ -120,6 +127,11 @@ public class PluginAssemblyLoadContext(string rootDirectory) : AssemblyLoadConte
 {
     protected override Assembly? Load(AssemblyName assemblyName)
     {
+        if (string.Equals(assemblyName.Name, typeof(IPluginEntry).Assembly.GetName().Name, StringComparison.Ordinal))
+        {
+            return typeof(IPluginEntry).Assembly;
+        }
+
         var candidate = Path.Combine(rootDirectory, assemblyName.Name + ".dll");
         if (File.Exists(candidate))
         {

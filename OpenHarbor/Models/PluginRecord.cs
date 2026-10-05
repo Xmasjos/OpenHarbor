@@ -2,9 +2,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace OpenHarbor.Models;
 
-public class PluginRecord
+public class PluginRecord : ICreatable, IUpdatable
 {
-    public Guid Id { get; set; } = Guid.NewGuid();
+    public Guid Id { get; set; }
 
     [Required]
     [StringLength(200)]
@@ -23,7 +23,11 @@ public class PluginRecord
 
     public bool Enabled { get; set; }
 
-    public DateTime CreatedUtc { get; set; } = DateTime.UtcNow;
+    public bool IsDashboardProvider { get; set; }
 
-    public DateTime UpdatedUtc { get; set; } = DateTime.UtcNow;
+    public bool IsSelectedDashboardProvider { get; set; }
+
+    public DateTime CreatedUtc { get; set; }
+
+    public DateTime UpdatedUtc { get; set; }
 }

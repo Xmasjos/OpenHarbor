@@ -31,26 +31,23 @@ public class PluginRecordNormalizer(IOptions<PluginServerOptions> options) : IPl
         }
     }
 
-    private string NormalizeRouteSubpath(string routeSubpath)
+    private static string NormalizeRouteSubpath(string routeSubpath)
     {
-        var sanitized = (routeSubpath ?? string.Empty).Trim();
-        sanitized = sanitized.Replace('\\', '/');
-        sanitized = sanitized.Trim('/');
+        var sanitized = (routeSubpath ?? string.Empty)
+            .Trim()
+            .Replace('\\', '/')
+            .Trim('/')
+            .ToLowerInvariant();
 
         if (string.IsNullOrWhiteSpace(sanitized))
-        {
             throw new InvalidOperationException("Route subpath is required.");
-        }
 
-        if (sanitized.Contains("//", StringComparison.Ordinal) || sanitized.StartsWith(".", StringComparison.Ordinal))
-        {
+        if (sanitized.Contains("//", StringComparison.Ordinal) || sanitized.StartsWith('.'))
             throw new InvalidOperationException("Route subpath is not valid.");
-        }
 
         if (sanitized.StartsWith("plugins", StringComparison.OrdinalIgnoreCase))
         {
-            sanitized = sanitized.TrimStart('p', 'P', 'l', 'L', 'u', 'U', 'g', 'G', 'i', 'I', 'n', 'N', 's', 'S');
-            sanitized = sanitized.TrimStart('/');
+            sanitized = sanitized["plugins".Length..].TrimStart('/');
         }
 
         return sanitized.Trim('/');

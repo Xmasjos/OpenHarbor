@@ -6,10 +6,32 @@
 
 <h1>@ViewData["Title"]</h1>
 
-<form method="post">
+<form method="post" enctype="multipart/form-data">
     <div asp-validation-summary="All" class="text-danger"></div>
 
     <input asp-for="Input.Id" type="hidden" />
+
+    @if (Model.RuntimeStatus is not null)
+    {
+        <div class="card mb-3">
+            <div class="card-body">
+                <h2 class="h5">Runtime status</h2>
+                <dl class="row mb-0">
+                    <dt class="col-sm-3">Version</dt>
+                    <dd class="col-sm-9">@(string.IsNullOrWhiteSpace(Model.RuntimeStatus.Version) ? "unknown" : Model.RuntimeStatus.Version)</dd>
+
+                    <dt class="col-sm-3">Status</dt>
+                    <dd class="col-sm-9">@Model.RuntimeStatus.Status</dd>
+
+                    @if (!string.IsNullOrWhiteSpace(Model.RuntimeStatus.Diagnostic))
+                    {
+                        <dt class="col-sm-3">Diagnostic</dt>
+                        <dd class="col-sm-9 text-danger">@Model.RuntimeStatus.Diagnostic</dd>
+                    }
+                </dl>
+            </div>
+        </div>
+    }
 
     <div class="mb-3">
         <label asp-for="Input.Name" class="form-label">Name</label>
@@ -22,6 +44,12 @@
     </div>
 
     <div class="mb-3">
+        <label asp-for="Package" class="form-label">Plugin ZIP package (optional)</label>
+        <input asp-for="Package" type="file" class="form-control" accept=".zip,application/zip" />
+        <div class="form-text">The ZIP must contain exactly one DLL and may include a public/ folder. Uploading a package sets the DLL and public paths below.</div>
+    </div>
+
+    <div class="mb-3">
         <label asp-for="Input.DllRelativePath" class="form-label">DLL relative path</label>
         <input asp-for="Input.DllRelativePath" class="form-control" placeholder="plugins/example/ExamplePlugin.dll" />
     </div>
@@ -31,9 +59,31 @@
         <input asp-for="Input.PublicFolderRelativePath" class="form-control" placeholder="plugins/example/public" />
     </div>
 
+    @if (Model.Input.IsSelectedDashboardProvider)
+    {
+        <div class="alert alert-warning">
+            <strong>Selected dashboard provider.</strong>
+            Select another provider from the plugin catalog before disabling this plugin or removing its dashboard-provider capability.
+        </div>
+    }
+
     <div class="mb-3 form-check">
-        <input asp-for="Input.Enabled" class="form-check-input" />
+        @if (Model.Input.IsSelectedDashboardProvider)
+        {
+            <input type="checkbox" class="form-check-input" checked="@Model.Input.Enabled" disabled />
+            <input type="hidden" asp-for="Input.Enabled" />
+        }
+        else
+        {
+            <input asp-for="Input.Enabled" class="form-check-input" />
+        }
         <label asp-for="Input.Enabled" class="form-check-label">Enabled</label>
+    </div>
+
+    <div class="mb-3 form-check">
+        <input asp-for="Input.IsDashboardProvider" class="form-check-input" />
+        <label asp-for="Input.IsDashboardProvider" class="form-check-label">Dashboard provider</label>
+        <div class="form-text">Indicates that this plugin can be selected as the dashboard provider.</div>
     </div>
 
     <button type="submit" class="btn btn-primary">Save</button>

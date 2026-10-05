@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -16,6 +18,9 @@ public class IndexModel(
 
     public bool RestartPending => runtimeState.RestartPending;
 
+    public PluginRuntimeStatus? GetRuntimeStatus(Guid pluginId) =>
+        runtimeState.Statuses.FirstOrDefault(status => status.Key == pluginId.ToString());
+
     public async Task OnGetAsync(CancellationToken cancellationToken)
     {
         Plugins = await catalogReader.GetAllAsync(cancellationToken);
@@ -25,5 +30,17 @@ public class IndexModel(
     {
         await catalogWriter.DeleteAsync(id, cancellationToken);
         return RedirectToPage();
+    }
+
+    public async Task<IActionResult> OnPostSelectDashboardProviderAsync(Guid id, CancellationToken cancellationToken)
+    {
+        await catalogWriter.SelectDashboardProviderAsync(id, cancellationToken);
+        return RedirectToPage();
+    }
+
+    public async Task<IActionResult> OnPostLogoutAsync()
+    {
+        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+        return RedirectToPage("/Account/Login");
     }
 }

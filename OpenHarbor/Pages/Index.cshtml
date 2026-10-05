@@ -12,32 +12,80 @@
 }
 
 <a class="btn btn-primary" asp-page="/Plugin/Edit">Create plugin</a>
-<a class="btn btn-secondary" asp-page="/Account/Login">Switch account</a>
+<form method="post" asp-page-handler="Logout" style="display:inline;">
+    <button type="submit" class="btn btn-secondary">Log out</button>
+</form>
 
 <table class="table table-striped mt-3">
     <thead>
         <tr>
             <th>Name</th>
             <th>Route</th>
+            <th>Version</th>
+            <th>Runtime</th>
+            <th>Enabled</th>
+            <th>Dashboard provider</th>
+            <th>Selected dashboard</th>
             <th>DLL</th>
             <th>Public folder</th>
-            <th>Enabled</th>
             <th>Actions</th>
         </tr>
     </thead>
     <tbody>
         @foreach (var record in Model.Plugins)
         {
+            var status = Model.GetRuntimeStatus(record.Id);
             <tr>
                 <td>@record.Name</td>
                 <td>/plugins/@record.RouteSubpath</td>
+                <td>@(status?.Version ?? "unknown")</td>
+                <td>
+                    @if (status is null)
+                    {
+                        <span class="text-muted">@(record.Enabled ? "not loaded" : "disabled")</span>
+                    }
+                    else
+                    {
+                        <span>@status.Status</span>
+                        @if (!string.IsNullOrWhiteSpace(status.Diagnostic))
+                        {
+                            <div class="small text-danger">@status.Diagnostic</div>
+                        }
+                    }
+                </td>
+                <td>@(record.Enabled ? "Yes" : "No")</td>
+                <td>
+                    @if (record.IsDashboardProvider)
+                    {
+                        <span class="badge text-bg-info">Provider</span>
+                    }
+                    else
+                    {
+                        <span class="text-muted">—</span>
+                    }
+                </td>
+                <td>
+                    @if (record.IsSelectedDashboardProvider)
+                    {
+                        <span class="badge text-bg-success">Selected</span>
+                    }
+                    else
+                    {
+                        <form method="post" asp-page-handler="SelectDashboardProvider" asp-route-id="@record.Id" style="display:inline;">
+                            <button type="submit" class="btn btn-sm btn-outline-primary" disabled="@(!record.Enabled || !record.IsDashboardProvider)">
+                                Select
+                            </button>
+                        </form>
+                    }
+                </td>
                 <td>@record.DllRelativePath</td>
                 <td>@(record.PublicFolderRelativePath ?? "—")</td>
-                <td>@(record.Enabled ? "Yes" : "No")</td>
                 <td>
                     <a class="btn btn-sm btn-outline-secondary" asp-page="/Plugin/Edit" asp-route-id="@record.Id">Edit</a>
                     <form method="post" asp-page-handler="Delete" asp-route-id="@record.Id" style="display:inline;">
-                        <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                        <button type="submit" class="btn btn-sm btn-outline-danger" disabled="@record.IsSelectedDashboardProvider">
+                            Delete
+                        </button>
                     </form>
                 </td>
             </tr>

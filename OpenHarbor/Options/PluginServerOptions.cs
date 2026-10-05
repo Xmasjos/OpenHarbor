@@ -6,10 +6,6 @@ public class PluginServerOptions
 
     public string ManagedPluginRoot { get; set; } = Path.Combine(AppContext.BaseDirectory, "managed-plugins");
 
-    public string DataDirectory { get; set; } = Path.Combine(AppContext.BaseDirectory, "data");
-
-    public string DatabaseFileName { get; set; } = "plugin-catalog.db";
-
     public int RuntimeStateInitializationRetryIntervalSeconds { get; set; } = 30;
 
     public long MaxUploadBytes { get; set; } = 64 * 1024 * 1024;

@@ -8,5 +8,7 @@ public interface IPluginCatalogWriter
 
     Task<PluginRecord> UpdateAsync(PluginRecord record, CancellationToken cancellationToken = default);
 
+    Task SelectDashboardProviderAsync(Guid id, CancellationToken cancellationToken = default);
+
     Task DeleteAsync(Guid id, CancellationToken cancellationToken = default);
 }

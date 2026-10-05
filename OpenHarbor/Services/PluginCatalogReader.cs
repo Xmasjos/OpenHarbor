@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using OpenHarbor.Data;
+using OpenHarbor.DAL;
 using OpenHarbor.Models;
 
 namespace OpenHarbor.Services;

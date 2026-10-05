@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using OpenHarbor.Models;
 
-namespace OpenHarbor.Data;
+namespace OpenHarbor.DAL;
 
 public class PluginCatalogDbContext(DbContextOptions<PluginCatalogDbContext> options)
     : DbContext(options)
@@ -12,8 +12,15 @@ public class PluginCatalogDbContext(DbContextOptions<PluginCatalogDbContext> opt
     {
         modelBuilder.Entity<PluginRecord>(entity =>
         {
+            entity.Property(x => x.IsSelectedDashboardProvider)
+                .HasDefaultValue(false);
+
             entity.HasIndex(x => x.RouteSubpath)
                 .IsUnique();
+
+            entity.HasIndex(x => x.IsSelectedDashboardProvider)
+                .IsUnique()
+                .HasFilter("[IsSelectedDashboardProvider] = 1");
 
             entity.Property(x => x.Name)
                 .HasMaxLength(200)
@@ -21,7 +28,8 @@ public class PluginCatalogDbContext(DbContextOptions<PluginCatalogDbContext> opt
 
             entity.Property(x => x.RouteSubpath)
                 .HasMaxLength(120)
-                .IsRequired();
+                .IsRequired()
+                .UseCollation("NOCASE");
 
             entity.Property(x => x.DllRelativePath)
                 .HasMaxLength(500)
@@ -31,4 +39,5 @@ public class PluginCatalogDbContext(DbContextOptions<PluginCatalogDbContext> opt
                 .HasMaxLength(500);
         });
     }
+
 }

@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using OpenHarbor.Data;
+using OpenHarbor.DAL;
 using OpenHarbor.Models;
 
 namespace OpenHarbor.Services;
@@ -8,19 +8,17 @@ public class PluginCatalogWriter(
     PluginCatalogDbContext dbContext,
     PluginRuntimeState runtimeState,
     IPluginRecordNormalizer recordNormalizer,
+    TimeProvider timeProvider,
     ILogger<PluginCatalogWriter> logger) : IPluginCatalogWriter
 {
     public async Task<PluginRecord> CreateAsync(PluginRecord record, CancellationToken cancellationToken = default)
     {
         recordNormalizer.Normalize(record);
 
-        if (await dbContext.Plugins.AnyAsync(x => x.RouteSubpath == record.RouteSubpath, cancellationToken))
+        if (await dbContext.Plugins.AnyAsync(x => x.RouteSubpath.Equals(record.RouteSubpath, StringComparison.CurrentCultureIgnoreCase), cancellationToken))
         {
             throw new InvalidOperationException("A plugin with that route subpath already exists.");
         }
-
-        record.CreatedUtc = DateTime.UtcNow;
-        record.UpdatedUtc = record.CreatedUtc;
 
         dbContext.Plugins.Add(record);
         await dbContext.SaveChangesAsync(cancellationToken);
@@ -36,9 +34,14 @@ public class PluginCatalogWriter(
         var existing = await dbContext.Plugins.FirstOrDefaultAsync(x => x.Id == record.Id, cancellationToken)
             ?? throw new InvalidOperationException("Plugin record not found.");
 
-        if (await dbContext.Plugins.AnyAsync(x => x.Id != record.Id && x.RouteSubpath == record.RouteSubpath, cancellationToken))
+        if (await dbContext.Plugins.AnyAsync(x => x.Id != record.Id && x.RouteSubpath.Equals(record.RouteSubpath, StringComparison.CurrentCultureIgnoreCase), cancellationToken))
         {
             throw new InvalidOperationException("A plugin with that route subpath already exists.");
+        }
+
+        if (existing.IsSelectedDashboardProvider && !record.IsDashboardProvider)
+        {
+            throw new InvalidOperationException("Select another dashboard provider before removing this plugin's dashboard-provider capability.");
         }
 
         existing.Name = record.Name;
@@ -46,12 +49,47 @@ public class PluginCatalogWriter(
         existing.DllRelativePath = record.DllRelativePath;
         existing.PublicFolderRelativePath = record.PublicFolderRelativePath;
         existing.Enabled = record.Enabled;
-        existing.UpdatedUtc = DateTime.UtcNow;
-
+        existing.IsDashboardProvider = record.IsDashboardProvider;
         await dbContext.SaveChangesAsync(cancellationToken);
         runtimeState.MarkRestartPending();
         logger.LogInformation("Updated plugin record {PluginName}.", existing.Name);
         return existing;
+    }
+
+    public async Task SelectDashboardProviderAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
+
+        var candidate = await dbContext.Plugins.AsNoTracking()
+            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken)
+            ?? throw new InvalidOperationException("Plugin record not found.");
+
+        if (!candidate.Enabled || !candidate.IsDashboardProvider)
+        {
+            throw new InvalidOperationException("Only enabled dashboard providers can be selected.");
+        }
+
+        var updatedUtc = timeProvider.GetUtcNow().UtcDateTime;
+        await dbContext.Plugins
+            .Where(x => x.IsSelectedDashboardProvider)
+            .ExecuteUpdateAsync(updates => updates
+                .SetProperty(x => x.IsSelectedDashboardProvider, false)
+                .SetProperty(x => x.UpdatedUtc, updatedUtc), cancellationToken);
+
+        var selectedCount = await dbContext.Plugins
+            .Where(x => x.Id == id && x.Enabled && x.IsDashboardProvider)
+            .ExecuteUpdateAsync(updates => updates
+                .SetProperty(x => x.IsSelectedDashboardProvider, true)
+                .SetProperty(x => x.UpdatedUtc, updatedUtc), cancellationToken);
+
+        if (selectedCount != 1)
+        {
+            throw new InvalidOperationException("The dashboard provider is no longer available for selection.");
+        }
+
+        await transaction.CommitAsync(cancellationToken);
+        runtimeState.MarkRestartPending();
+        logger.LogInformation("Selected plugin {PluginName} as the dashboard provider.", candidate.Name);
     }
 
     public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
