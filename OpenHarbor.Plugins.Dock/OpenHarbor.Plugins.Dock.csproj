@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\OpenHarbor.PluginContracts\OpenHarbor.PluginContracts.csproj" />
+    <Content Include="public\**\*" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <Target Name="PackageDockPlugin" AfterTargets="Build">
+    <PropertyGroup>
+      <DockPackageStage>$(MSBuildProjectDirectory)/$(IntermediateOutputPath)dock-package</DockPackageStage>
+      <DockPackagePath>$(MSBuildProjectDirectory)/artifacts/OpenHarbor.Dock.zip</DockPackagePath>
+    </PropertyGroup>
+    <ItemGroup>
+      <_DockPublicAsset Include="$(TargetDir)public/**/*" />
+    </ItemGroup>
+    <RemoveDir Directories="$(DockPackageStage)" />
+    <MakeDir Directories="$(DockPackageStage)/public;$(MSBuildProjectDirectory)/artifacts" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(DockPackageStage)" />
+    <Copy
+      SourceFiles="@(_DockPublicAsset)"
+      DestinationFiles="@(_DockPublicAsset->'$(DockPackageStage)/public/%(RecursiveDir)%(Filename)%(Extension)')" />
+    <ZipDirectory SourceDirectory="$(DockPackageStage)" DestinationFile="$(DockPackagePath)" Overwrite="true" />
+  </Target>
+
+</Project>

@@ -12,6 +12,7 @@ namespace OpenHarbor.Pages;
 public class IndexModel(
     IPluginCatalogReader catalogReader,
     IPluginCatalogWriter catalogWriter,
+    IHostApplicationLifetime applicationLifetime,
     PluginRuntimeState runtimeState) : PageModel
 {
     public IList<PluginRecord> Plugins { get; private set; } = [];
@@ -35,6 +36,12 @@ public class IndexModel(
     public async Task<IActionResult> OnPostSelectDashboardProviderAsync(Guid id, CancellationToken cancellationToken)
     {
         await catalogWriter.SelectDashboardProviderAsync(id, cancellationToken);
+        return RedirectToPage();
+    }
+
+    public IActionResult OnPostRestartAsync()
+    {
+        applicationLifetime.StopApplication();
         return RedirectToPage();
     }
 

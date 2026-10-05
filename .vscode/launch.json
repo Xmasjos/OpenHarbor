@@ -5,18 +5,24 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "C#: OpenHarbor [http]",
+            "name": "OpenHarbor [http]",
             "type": "dotnet",
             "request": "launch",
             "projectPath": "${workspaceFolder}/OpenHarbor/OpenHarbor.csproj",
             "launchConfigurationId": "http"
         },
         {
-            "name": "C#: OpenHarbor [https]",
+            "name": "OpenHarbor [https]",
             "type": "dotnet",
             "request": "launch",
             "projectPath": "${workspaceFolder}/OpenHarbor/OpenHarbor.csproj",
             "launchConfigurationId": "https"
+        },
+        {
+            "name": "Watch - OpenHarbor",
+            "type": "coreclr",
+            "request": "attach",
+            "processName": "OpenHarbor"
         }
     ]
 }

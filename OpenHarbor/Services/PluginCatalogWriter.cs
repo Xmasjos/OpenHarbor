@@ -15,10 +15,8 @@ public class PluginCatalogWriter(
     {
         recordNormalizer.Normalize(record);
 
-        if (await dbContext.Plugins.AnyAsync(x => x.RouteSubpath.Equals(record.RouteSubpath, StringComparison.CurrentCultureIgnoreCase), cancellationToken))
-        {
+        if (await dbContext.Plugins.AnyAsync(x => x.RouteSubpath.Equals(record.RouteSubpath), cancellationToken))
             throw new InvalidOperationException("A plugin with that route subpath already exists.");
-        }
 
         dbContext.Plugins.Add(record);
         await dbContext.SaveChangesAsync(cancellationToken);
@@ -34,15 +32,11 @@ public class PluginCatalogWriter(
         var existing = await dbContext.Plugins.FirstOrDefaultAsync(x => x.Id == record.Id, cancellationToken)
             ?? throw new InvalidOperationException("Plugin record not found.");
 
-        if (await dbContext.Plugins.AnyAsync(x => x.Id != record.Id && x.RouteSubpath.Equals(record.RouteSubpath, StringComparison.CurrentCultureIgnoreCase), cancellationToken))
-        {
+        if (await dbContext.Plugins.AnyAsync(x => x.Id != record.Id && x.RouteSubpath.Equals(record.RouteSubpath), cancellationToken))
             throw new InvalidOperationException("A plugin with that route subpath already exists.");
-        }
 
         if (existing.IsSelectedDashboardProvider && !record.IsDashboardProvider)
-        {
             throw new InvalidOperationException("Select another dashboard provider before removing this plugin's dashboard-provider capability.");
-        }
 
         existing.Name = record.Name;
         existing.RouteSubpath = record.RouteSubpath;
@@ -65,9 +59,7 @@ public class PluginCatalogWriter(
             ?? throw new InvalidOperationException("Plugin record not found.");
 
         if (!candidate.Enabled || !candidate.IsDashboardProvider)
-        {
             throw new InvalidOperationException("Only enabled dashboard providers can be selected.");
-        }
 
         var updatedUtc = timeProvider.GetUtcNow().UtcDateTime;
         await dbContext.Plugins
@@ -83,9 +75,7 @@ public class PluginCatalogWriter(
                 .SetProperty(x => x.UpdatedUtc, updatedUtc), cancellationToken);
 
         if (selectedCount != 1)
-        {
             throw new InvalidOperationException("The dashboard provider is no longer available for selection.");
-        }
 
         await transaction.CommitAsync(cancellationToken);
         runtimeState.MarkRestartPending();

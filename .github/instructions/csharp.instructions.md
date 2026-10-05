@@ -10,6 +10,7 @@ applyTo: "**/*.cs"
 - Avoid static helper classes and methods unless there is a clear necessity; treat them as a design smell and prefer behavior owned by an appropriate type.
 - Prefix interface names with `I`.
 - Use primary constructors and file-scoped namespaces.
+- Follow applicable `.editorconfig` style settings.
 - Do *not* apply 'sealed', unless extending the type is a design concern. Use 'sealed' only when the type is not intended to be extended.
 - After changing C# code, inspect editor diagnostics and analyzer results for the affected files before considering a full build. Do not run a full build when the IDE diagnostics are available.
 - Run a build when analyzer diagnostics are unavailable, when changes affect project-wide compilation or generated code, or when final verification is needed.

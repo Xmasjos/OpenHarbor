@@ -1,4 +1,4 @@
-@page
+@page "/admin/plugins"
 @model OpenHarbor.Pages.IndexModel
 @{
     ViewData["Title"] = "Plugin catalog";
@@ -12,6 +12,10 @@
 }
 
 <a class="btn btn-primary" asp-page="/Plugin/Edit">Create plugin</a>
+<form method="post" asp-page-handler="Restart" style="display:inline;"
+    onsubmit="return confirm('Restart the server now? The current process will stop and requires a supervisor to relaunch it.');">
+    <button type="submit" class="btn btn-warning">Restart server</button>
+</form>
 <form method="post" asp-page-handler="Logout" style="display:inline;">
     <button type="submit" class="btn btn-secondary">Log out</button>
 </form>

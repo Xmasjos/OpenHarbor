@@ -92,6 +92,63 @@ public class Startup(IConfiguration configuration, PluginServerOptions pluginOpt
         app.MapRazorPages();
         _pluginManager.MapEndpoints(app);
 
+        app.MapGet("/_host/plugin-ui.js", (PluginRuntimeState runtimeState) =>
+        {
+            var selectedPlugin = _pluginManager.LoadedPlugins.FirstOrDefault(
+                plugin => plugin.Record.Id == runtimeState.SelectedDashboardPluginId);
+            if (selectedPlugin?.Entry.Dashboard is null || string.IsNullOrWhiteSpace(selectedPlugin.Record.PublicFolderRelativePath))
+                return (IResult)Results.NotFound();
+
+            var runtimePath = Path.GetFullPath(Path.Combine(
+                _pluginOptions.ManagedPluginRoot,
+                selectedPlugin.Record.PublicFolderRelativePath.Replace('/', Path.DirectorySeparatorChar),
+                "plugin-ui.js"));
+            return File.Exists(runtimePath)
+                ? Results.File(runtimePath, "text/javascript; charset=utf-8")
+                : Results.NotFound();
+        }).RequireAuthorization("Admin");
+
+        app.MapGet("/", async (PluginRuntimeState runtimeState, IPluginCatalogReader catalogReader) =>
+        {
+            if (runtimeState.SelectedDashboardPluginId is not Guid selectedPluginId)
+                return Results.Content("<!doctype html><html lang=\"en\"><title>Dashboard unavailable</title><h1>No dashboard provider is selected.</h1><a href=\"/admin/plugins\">Open plugin catalog</a></html>", "text/html");
+
+            var record = await catalogReader.GetByIdAsync(selectedPluginId);
+            var loadedPlugin = _pluginManager.LoadedPlugins.FirstOrDefault(plugin => plugin.Record.Id == selectedPluginId);
+            if (record is null || !record.Enabled || loadedPlugin?.Entry.Dashboard is null || string.IsNullOrWhiteSpace(record.PublicFolderRelativePath))
+                return Results.Content("<!doctype html><html lang=\"en\"><title>Dashboard unavailable</title><h1>The selected dashboard is unavailable.</h1><a href=\"/admin/plugins\">Open plugin catalog</a></html>", "text/html");
+
+            var publicDirectory = Path.GetFullPath(Path.Combine(
+                _pluginOptions.ManagedPluginRoot,
+                record.PublicFolderRelativePath.Replace('/', Path.DirectorySeparatorChar)));
+            var dashboardFile = Path.Combine(publicDirectory, "index.html");
+            if (!File.Exists(dashboardFile))
+                return Results.Content("<!doctype html><html lang=\"en\"><title>Dashboard unavailable</title><h1>The selected dashboard has no public index.html.</h1><a href=\"/admin/plugins\">Open plugin catalog</a></html>", "text/html");
+
+            var dashboardHtml = await File.ReadAllTextAsync(dashboardFile);
+            var baseElement = $"<base href=\"/plugins/{record.RouteSubpath.Trim('/')}/\">";
+            var dashboardIconSvg = loadedPlugin.Entry.Application?.IconSvg;
+            var faviconHref = string.IsNullOrWhiteSpace(dashboardIconSvg)
+                ? "/icon.svg"
+                : $"data:image/svg+xml,{Uri.EscapeDataString(dashboardIconSvg)}";
+            var faviconElement = $"<link rel=\"icon\" type=\"image/svg+xml\" href=\"{faviconHref}\">";
+            dashboardHtml = dashboardHtml.Replace("<head>", $"<head>{baseElement}{faviconElement}", StringComparison.OrdinalIgnoreCase);
+            return Results.Content(dashboardHtml, "text/html; charset=utf-8");
+        }).RequireAuthorization("Admin");
+
+        app.MapGet("/api/dashboard/applications", () => Results.Ok(
+                _pluginManager.LoadedPlugins
+                    .Where(plugin => plugin.Record.Enabled && plugin.Entry.Application is not null)
+                    .Select(plugin => new
+                    {
+                        id = plugin.Record.Id,
+                        name = plugin.Entry.Application!.Name,
+                        iconSvg = plugin.Entry.Application.IconSvg,
+                        launchMode = plugin.Entry.Application.LaunchMode,
+                        routeSubpath = plugin.Record.RouteSubpath.Trim('/')
+                    })))
+            .RequireAuthorization("Admin");
+
         app.MapGet("/api/admin/status", async (PluginRuntimeState runtimeState, IPluginCatalogReader catalogReader) =>
         {
             var records = await catalogReader.GetAllAsync();
@@ -133,9 +190,7 @@ public class Startup(IConfiguration configuration, PluginServerOptions pluginOpt
             var databasePath = Path.GetFullPath(sqliteConnectionString.DataSource);
             var databaseDirectory = Path.GetDirectoryName(databasePath);
             if (databaseDirectory is not null)
-            {
                 Directory.CreateDirectory(databaseDirectory);
-            }
 
             sqliteConnectionString.DataSource = databasePath;
         }
