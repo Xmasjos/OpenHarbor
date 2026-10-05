@@ -7,8 +7,8 @@ applyTo: "**"
 - Apply SOLID pragmatically; add abstractions only when they clarify responsibility, protect contracts, or isolate change.
 - Put shared behavior on an appropriate parent (abstract if useful); inherit only where types share a meaningful contract.
 - Read environment variables, files, and external configuration only at the application configuration boundary. Bind with the options pattern and inject typed options where needed.
-- Do not write unit tests during implementation; add them at the end of the implementation stage.
-- Unit tests should usually target interfaces and consumer-visible behavior, not implementation details or helper methods. Test helpers indirectly through their consumption points.
+- Do not add or modify unit tests unless the user explicitly requests them. Implementation work must not create test files or test code by default.
+- If a user explicitly asks for tests, prefer tests that target interfaces and consumer-visible behavior, not implementation details or helper methods. Test helpers indirectly through their consumption points.
 
 ## SOLID in this codebase
 

@@ -1,0 +1,4 @@
+root = true
+
+[*.cs]
+dotnet_style_braces = when_multiline:suggestion
