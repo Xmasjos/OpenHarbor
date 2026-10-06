@@ -33,6 +33,7 @@ public class Startup(IConfiguration configuration, PluginServerOptions pluginOpt
         services.AddScoped<IPluginCatalogReader, PluginCatalogReader>();
         services.AddScoped<IPluginCatalogWriter, PluginCatalogWriter>();
         services.AddSingleton<ILoadedPluginCatalogReader>(_pluginManager);
+        services.AddSingleton<IPluginDataManager>(_pluginManager);
         services.AddSingleton<IPluginPackageInstaller, PluginPackageInstaller>();
         services.AddSingleton<IPluginRecordNormalizer, PluginRecordNormalizer>();
         services.AddHostedService<PluginRuntimeStateInitializer>();

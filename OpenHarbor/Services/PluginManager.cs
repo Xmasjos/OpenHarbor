@@ -9,9 +9,11 @@ using OpenHarbor.Options;
 
 namespace OpenHarbor.Services;
 
-public class PluginManager : ILoadedPluginCatalogReader
+public class PluginManager : ILoadedPluginCatalogReader, IPluginDataManager
 {
     private readonly List<LoadedPlugin> _loadedPlugins = [];
+    private string? _managedPluginRoot;
+    private IConfiguration? _configuration;
 
     public IReadOnlyList<LoadedPlugin> LoadedPlugins => _loadedPlugins;
 
@@ -24,6 +26,8 @@ public class PluginManager : ILoadedPluginCatalogReader
         _loadedPlugins.Clear();
 
         var rootDirectory = Path.GetFullPath(options.ManagedPluginRoot);
+        _managedPluginRoot = rootDirectory;
+        _configuration = configuration;
         Directory.CreateDirectory(rootDirectory);
 
         foreach (var record in enabledPlugins)
@@ -97,6 +101,48 @@ public class PluginManager : ILoadedPluginCatalogReader
         {
             var group = endpoints.MapGroup($"/plugins/{loaded.Record.RouteSubpath.Trim('/')}");
             loaded.Entry.MapEndpoints(group);
+        }
+    }
+
+    public async Task DeleteDataAsync(PluginRecord record, CancellationToken cancellationToken = default)
+    {
+        var loaded = _loadedPlugins.FirstOrDefault(plugin => plugin.Record.Id == record.Id);
+        if (loaded?.Entry is IPluginDataCleanup loadedCleanup)
+        {
+            await loadedCleanup.DeleteDataAsync(cancellationToken);
+            return;
+        }
+
+        if (_managedPluginRoot is null || _configuration is null)
+            return;
+
+        var dllPath = Path.GetFullPath(Path.Combine(
+            _managedPluginRoot,
+            record.DllRelativePath.Replace('/', Path.DirectorySeparatorChar)));
+        if (!File.Exists(dllPath))
+            return;
+
+        var loadContext = new PluginAssemblyLoadContext(Path.GetDirectoryName(dllPath) ?? _managedPluginRoot);
+        try
+        {
+            var assembly = loadContext.LoadFromAssemblyPath(dllPath);
+            var entryType = assembly
+                .GetTypes()
+                .FirstOrDefault(type =>
+                    typeof(IPluginEntry).IsAssignableFrom(type)
+                    && typeof(IPluginDataCleanup).IsAssignableFrom(type)
+                    && !type.IsAbstract
+                    && type.IsClass);
+            if (entryType is null || Activator.CreateInstance(entryType) is not IPluginEntry pluginEntry)
+                return;
+
+            pluginEntry.ConfigureServices(new ServiceCollection(), _configuration);
+            if (pluginEntry is IPluginDataCleanup cleanup)
+                await cleanup.DeleteDataAsync(cancellationToken);
+        }
+        finally
+        {
+            loadContext.Unload();
         }
     }
 }

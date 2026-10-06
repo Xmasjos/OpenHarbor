@@ -8,6 +8,7 @@ const sharedComponents = {
   Label: Form.Item,
   Text: Typography.Text,
   Input,
+  TextArea: Input.TextArea,
   Form,
   Layout,
   Checkbox,

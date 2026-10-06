@@ -10,6 +10,7 @@ namespace OpenHarbor.Pages;
 public class IndexModel(
     IPluginCatalogReader catalogReader,
     IPluginCatalogWriter catalogWriter,
+    IPluginDataManager pluginDataManager,
     PluginRuntimeState runtimeState) : PageModel
 {
     public IList<PluginRecord> Plugins { get; private set; } = [];
@@ -26,6 +27,11 @@ public class IndexModel(
 
     public async Task<IActionResult> OnPostDeleteAsync(Guid id, CancellationToken cancellationToken)
     {
+        var record = await catalogReader.GetByIdAsync(id, cancellationToken);
+        if (record is null)
+            return NotFound();
+
+        await pluginDataManager.DeleteDataAsync(record, cancellationToken);
         await catalogWriter.DeleteAsync(id, cancellationToken);
         return RedirectToPage();
     }

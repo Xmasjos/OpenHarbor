@@ -25,7 +25,7 @@ The optional host-owned structural metadata subobject on a plugin entry for the 
 _Avoid_: Application UI (when referring to the metadata contract)
 
 **Abstract UI Component**:
-A host-defined semantic UI primitive, such as Button, Label, Text, Input, Form, Layout, Checkbox, Toggle, or Upload, with interaction logic owned by the app plugin and visual treatment supplied by the selected dashboard through a React context provider.
+A host-defined semantic UI primitive, such as Button, Label, Text, Input, TextArea, Form, Layout, Checkbox, Toggle, or Upload, with interaction logic owned by the app plugin and visual treatment supplied by the selected dashboard through a React context provider.
 _Avoid_: Dashboard widget (when referring to a shared component contract)
 
 **In-Page UI Module**:
@@ -91,6 +91,26 @@ _Avoid_: Route subpath, web root
 **Managed Plugin Directory**:
 The server-controlled filesystem root where plugin DLLs and related files are stored and selected.
 _Avoid_: Arbitrary plugin path
+
+## Todo
+
+**Todo List**:
+The single collection of todo items provided by the Todo plugin in the PoC; there are no separate lists, and its contents persist independently of the dashboard window and server process lifetimes.
+
+**Todo Data**:
+Data owned by the Todo plugin and kept independently of its replaceable plugin bundle; disabling the plugin preserves the data, while deleting the plugin removes it through plugin-manager cleanup.
+
+**Todo Item**:
+A uniquely identifiable Todo with a required name that is not whitespace-only and is at most 256 characters, and an optional multiline plain-text description of at most 10,000 characters; names need not be unique, and both fields can be edited in place without changing position and are preserved as entered. It can be active or finished, and a finished item can be reopened.
+
+**Active Todo**:
+A Todo that has not been finished; active Todos appear before finished Todos and can be manually reordered.
+
+**Finished Todo**:
+A completed Todo that remains visible after active Todos; finished Todos are ordered by their latest completion, oldest first, and can be reopened.
+
+**Todo Deletion**:
+Permanently removes an active or finished Todo from the single Todo List; deleted Todos are not archived or recoverable.
 
 ## Administration
 

@@ -48,8 +48,8 @@ export const {
 	version,
 } = React;
 export { React as default };
-export const { createPortal, flushSync } = ReactDOM;
+export const { createPortal, flushSync, unstable_batchedUpdates } = ReactDOM;
 export { createRoot, hydrateRoot } from 'react-dom/client';
 export { jsx, jsxs } from 'react/jsx-runtime';
 export { jsxDEV } from 'react/jsx-dev-runtime';
-export { PluginUiProvider, Button, Label, Text, Input, Form, Layout, Checkbox, Toggle, Upload } from './semantic-components.tsx';
+export { PluginUiProvider, Button, Label, Text, Input, TextArea, Form, Layout, Checkbox, Toggle, Upload } from './semantic-components.tsx';

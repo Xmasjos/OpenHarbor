@@ -16,3 +16,4 @@ managed-plugins/
 *.db-wal
 node_modules/
 OpenHarbor.Plugins.Dock/public/**
+OpenHarbor.Plugins.Todo/public/**

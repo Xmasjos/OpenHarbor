@@ -1,5 +1,6 @@
 <Solution>
   <Project Path="OpenHarbor.PluginContracts/OpenHarbor.PluginContracts.csproj" />
   <Project Path="OpenHarbor.Plugins.Dock/OpenHarbor.Plugins.Dock.csproj" />
+  <Project Path="OpenHarbor.Plugins.Todo/OpenHarbor.Plugins.Todo.csproj" />
   <Project Path="OpenHarbor/OpenHarbor.csproj" />
 </Solution>

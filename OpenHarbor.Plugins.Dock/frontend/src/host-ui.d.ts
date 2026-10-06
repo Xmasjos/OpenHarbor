@@ -47,6 +47,7 @@ export {
 	useTransition,
 	version,
 } from 'react';
-export { createPortal, flushSync } from 'react-dom';
+export { createPortal, flushSync, unstable_batchedUpdates } from 'react-dom';
 export { createRoot } from 'react-dom/client';
 export function PluginUiProvider(props: React.PropsWithChildren<{ components: Record<string, React.ComponentType<any>> }>): React.ReactElement;
+export const TextArea: React.ComponentType<any>;

@@ -1,0 +1,83 @@
+:root {
+  font-family: 'IBM Plex Sans', sans-serif;
+  color: #202d29;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  --ink: #202d29;
+  --muted: #77847e;
+  --line: #e1e8e3;
+  --green: #267556;
+  --green-pale: #e8f2ec;
+  --coral: #bd524c;
+}
+
+* { box-sizing: border-box; }
+button, input, textarea { font: inherit; }
+
+.todo-app { min-height: 100%; padding: 27px clamp(18px, 4vw, 48px) 42px; background: linear-gradient(180deg, #f8fbf8 0%, #fff 250px); }
+.todo-header { display: flex; align-items: center; justify-content: space-between; padding-bottom: 17px; border-bottom: 1px solid var(--line); }
+.eyebrow { margin: 0 0 3px; color: var(--green); font-size: 10px; font-weight: 600; letter-spacing: 1px; }
+.todo-header h1 { margin: 0; color: var(--ink); font-family: Georgia, serif; font-size: 27px; font-weight: 400; line-height: 1.2; }
+.header-count { display: flex; min-width: 46px; height: 34px; align-items: center; justify-content: center; gap: 6px; border: 1px solid #dce9df; border-radius: 17px; color: var(--green); background: #f1f7f3; font-size: 12px; }
+.composer { display: flex; align-items: flex-start; gap: 10px; padding: 17px 0 21px; border-bottom: 1px solid var(--line); }
+.composer-fields { display: grid; flex: 1; min-width: 0; gap: 8px; }
+.composer .ant-input, .edit-fields .ant-input, .edit-fields textarea.ant-input { border-color: #dce5df; border-radius: 4px; color: var(--ink); background: white; box-shadow: none; }
+.composer .ant-input { min-height: 38px; }
+.composer textarea.ant-input { min-height: 54px; resize: vertical; }
+.composer .ant-input:focus, .composer .ant-input-focused, .edit-fields .ant-input:focus { border-color: #65a889; box-shadow: 0 0 0 2px rgba(38,117,86,.1); }
+.composer > .ant-btn { min-width: 94px; height: 38px; margin-top: 0; border-radius: 4px; background: #267556; box-shadow: none; }
+.todo-section { padding-top: 20px; }
+.finished-section { margin-top: 25px; padding-top: 19px; border-top: 1px solid var(--line); }
+.section-heading { display: flex; align-items: baseline; gap: 9px; margin-bottom: 10px; }
+.section-heading h2 { margin: 0; color: #485650; font-size: 12px; font-weight: 600; }
+.section-heading span { color: #929d97; font-size: 11px; }
+.todo-list { display: grid; gap: 7px; }
+.todo-card { display: grid; position: relative; grid-template-columns: 28px minmax(0, 1fr) auto; align-items: start; gap: 11px; min-width: 0; padding: 13px 12px 13px 11px; border: 0; border-radius: 4px; outline: none; background: #eef5f0; animation: todo-appear 220ms ease both; animation-delay: calc(var(--item-index, 0) * 25ms); transition: background-color 120ms ease, box-shadow 120ms ease; }
+.todo-card:nth-child(even) { background: #edf2f5; }
+.todo-card:hover { box-shadow: inset 3px 0 #8bbca2; }
+.todo-card:focus-visible { box-shadow: inset 3px 0 #267556, 0 0 0 2px rgba(38,117,86,.17); }
+.todo-card.is-dragging { z-index: 2; background: #e2efe6; box-shadow: 0 9px 24px rgba(29,58,43,.15); }
+.todo-card.is-finished { background: #f0f2f0; }
+.completion-button { display: grid; width: 27px; height: 27px; flex: 0 0 27px; place-items: center; padding: 0; border: 0; border-radius: 50%; color: #789187; background: transparent; cursor: pointer; }
+.completion-button:hover { color: var(--green); background: #dcebe1; }
+.is-finished .completion-button { color: white; background: #48a178; }
+.todo-copy { min-width: 0; padding-top: 1px; }
+.todo-name { display: block; overflow-wrap: anywhere; color: var(--ink); font-size: 13px; font-weight: 500; line-height: 1.45; }
+.todo-description { margin: 4px 0 0; color: #62716a; font-size: 12px; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
+.is-finished .todo-name, .is-finished .todo-description { color: #89938e; }
+.is-finished .todo-name { text-decoration: line-through; text-decoration-color: #b6c0ba; }
+.todo-actions { display: flex; align-items: center; gap: 1px; margin: -4px -5px 0 0; }
+.todo-actions .ant-btn { display: grid; width: 32px; height: 32px; place-items: center; padding: 0; border-radius: 4px; color: #6c7b73; }
+.todo-actions .ant-btn:hover { color: var(--green); background: rgba(255,255,255,.75); }
+.todo-actions .ant-btn-dangerous:hover { color: var(--coral) !important; background: #fff1ef !important; }
+.edit-fields { display: grid; gap: 7px; }
+.edit-fields textarea.ant-input { min-height: 62px; resize: vertical; }
+.item-error, .app-error { margin: 6px 0 0; color: #ae3934; font-size: 12px; }
+.app-error { padding: 9px 11px; border-left: 3px solid #c75d53; background: #fff2f0; }
+.list-state { margin: 0; padding: 12px 0 3px; color: #8a9690; font-size: 12px; }
+.dialog-backdrop { position: fixed; z-index: 30; inset: 0; display: grid; place-items: center; padding: 18px; background: rgba(20,31,26,.42); animation: fade-in 120ms ease both; }
+.delete-dialog { width: min(390px, 100%); padding: 22px; border: 1px solid #e2e9e4; border-radius: 6px; background: #fff; box-shadow: 0 18px 55px rgba(20,31,26,.2); }
+.dialog-icon { display: grid; width: 34px; height: 34px; place-items: center; border-radius: 50%; color: var(--coral); background: #fff0ee; }
+.delete-dialog h2 { margin: 13px 0 5px; color: var(--ink); font-family: Georgia, serif; font-size: 19px; font-weight: 400; }
+.delete-dialog p { margin: 0; color: #68766f; font-size: 13px; line-height: 1.5; overflow-wrap: anywhere; }
+.delete-dialog p strong { color: #35443d; font-weight: 600; }
+.dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 22px; }
+.dialog-actions .ant-btn { height: 34px; border-radius: 4px; }
+.dialog-actions .ant-btn-primary { background: #b94d47; box-shadow: none; }
+
+@keyframes todo-appear { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+
+@media (max-width: 540px) {
+  .todo-app { padding: 19px 15px 30px; }
+  .composer { flex-direction: column; }
+  .composer-fields { width: 100%; }
+  .composer > .ant-btn { align-self: flex-end; }
+  .todo-card { grid-template-columns: 27px minmax(0, 1fr) auto; gap: 8px; padding: 11px 7px 11px 8px; }
+  .todo-actions .ant-btn { width: 29px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
