@@ -9,7 +9,7 @@ using OpenHarbor.Options;
 
 namespace OpenHarbor.Services;
 
-public class PluginManager
+public class PluginManager : ILoadedPluginCatalogReader
 {
     private readonly List<LoadedPlugin> _loadedPlugins = [];
 

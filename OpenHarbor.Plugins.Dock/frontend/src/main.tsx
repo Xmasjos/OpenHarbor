@@ -1,6 +1,6 @@
 import React, { Component, createRoot, PluginUiProvider, Suspense, useEffect, useMemo, useRef, useState } from '/_host/plugin-ui.js';
-import { AppstoreOutlined, CloseOutlined, FullscreenExitOutlined, FullscreenOutlined, SearchOutlined } from '@ant-design/icons';
-import { Button, Checkbox, ConfigProvider, Form, Input, Layout, Spin, Switch, Typography, Upload } from 'antd';
+import { AppstoreOutlined, CloseOutlined, FullscreenExitOutlined, FullscreenOutlined, LogoutOutlined, ReloadOutlined, SearchOutlined, UserOutlined } from '@ant-design/icons';
+import { Button, Checkbox, ConfigProvider, Dropdown, Form, Input, Layout, Spin, Switch, Typography, Upload } from 'antd';
 import './style.css';
 
 const sharedComponents = {
@@ -159,6 +159,26 @@ function Dock() {
     });
   }
 
+  async function runTaskbarAction(action: 'restart' | 'logout') {
+    if (action === 'restart' && !window.confirm('Restart the server now? The current process will stop and requires a supervisor to relaunch it.'))
+      return;
+
+    try {
+      const tokenResponse = await fetch('/api/admin/antiforgery');
+      if (!tokenResponse.ok) throw new Error('Antiforgery token unavailable');
+      const { requestToken } = await tokenResponse.json() as { requestToken: string };
+      const response = await fetch(`/api/admin/${action}`, {
+        method: 'POST',
+        headers: { RequestVerificationToken: requestToken },
+      });
+      if (!response.ok) throw new Error(`${action} request failed`);
+      if (action === 'logout') window.location.assign('/Account/Login');
+      else window.alert('Restart requested. The host must be relaunched by the configured supervisor.');
+    } catch {
+      window.alert(`Could not ${action} the server. Please try again.`);
+    }
+  }
+
   return (
     <ConfigProvider theme={{
       token: {
@@ -243,7 +263,7 @@ function Dock() {
           </div>
         )}
 
-        <nav className="taskbar" aria-label="Open applications">
+        <nav className="taskbar" aria-label="Taskbar">
           <Button
             className={`launcher${selectorOpen ? ' is-open' : ''}`}
             aria-label="Applications"
@@ -269,6 +289,26 @@ function Dock() {
             ))}
           </div>
           <Typography.Text className="taskbar-brand">OpenHarbor</Typography.Text>
+          <Dropdown
+            trigger={['click']}
+            menu={{
+              items: [
+                { key: 'restart', icon: <ReloadOutlined />, label: 'Restart server' },
+                { key: 'logout', icon: <LogoutOutlined />, label: 'Log out', danger: true },
+              ],
+              onClick: ({ key }) => {
+                if (key === 'restart' || key === 'logout') void runTaskbarAction(key);
+              },
+            }}
+          >
+            <Button
+              className="taskbar-menu"
+              type="text"
+              aria-label="Account and server actions"
+              title="Account and server actions"
+              icon={<UserOutlined />}
+            />
+          </Dropdown>
         </nav>
       </main>
     </ConfigProvider>

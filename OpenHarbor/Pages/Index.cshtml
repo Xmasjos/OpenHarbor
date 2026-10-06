@@ -12,11 +12,15 @@
 }
 
 <a class="btn btn-primary" asp-page="/Plugin/Edit">Create plugin</a>
-<form method="post" asp-page-handler="Restart" style="display:inline;"
-    onsubmit="return confirm('Restart the server now? The current process will stop and requires a supervisor to relaunch it.');">
+<form method="post" asp-controller="Admin" asp-action="Restart" asp-antiforgery="true" style="display:inline;"
+    data-redirect="/admin/plugins"
+    data-confirm="Restart the server now? The current process will stop and requires a supervisor to relaunch it."
+    onsubmit="submitAdminAction(event, this)">
     <button type="submit" class="btn btn-warning">Restart server</button>
 </form>
-<form method="post" asp-page-handler="Logout" style="display:inline;">
+<form method="post" asp-controller="Admin" asp-action="Logout" asp-antiforgery="true" style="display:inline;"
+    data-redirect="/Account/Login"
+    onsubmit="submitAdminAction(event, this)">
     <button type="submit" class="btn btn-secondary">Log out</button>
 </form>
 
@@ -96,3 +100,22 @@
         }
     </tbody>
 </table>
+
+<script>
+    async function submitAdminAction(event, form) {
+        event.preventDefault();
+        if (form.dataset.confirm && !window.confirm(form.dataset.confirm)) return;
+
+        const requestToken = form.querySelector('input[name="__RequestVerificationToken"]')?.value;
+        try {
+            const response = await fetch(form.action, {
+                method: 'POST',
+                headers: { RequestVerificationToken: requestToken ?? '' },
+            });
+            if (!response.ok) throw new Error('The request failed');
+            window.location.assign(form.dataset.redirect ?? '/');
+        } catch {
+            window.alert('The requested action could not be completed.');
+        }
+    }
+</script>

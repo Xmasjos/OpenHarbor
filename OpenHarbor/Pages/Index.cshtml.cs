@@ -1,5 +1,3 @@
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -12,7 +10,6 @@ namespace OpenHarbor.Pages;
 public class IndexModel(
     IPluginCatalogReader catalogReader,
     IPluginCatalogWriter catalogWriter,
-    IHostApplicationLifetime applicationLifetime,
     PluginRuntimeState runtimeState) : PageModel
 {
     public IList<PluginRecord> Plugins { get; private set; } = [];
@@ -37,17 +34,5 @@ public class IndexModel(
     {
         await catalogWriter.SelectDashboardProviderAsync(id, cancellationToken);
         return RedirectToPage();
-    }
-
-    public IActionResult OnPostRestartAsync()
-    {
-        applicationLifetime.StopApplication();
-        return RedirectToPage();
-    }
-
-    public async Task<IActionResult> OnPostLogoutAsync()
-    {
-        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-        return RedirectToPage("/Account/Login");
     }
 }
